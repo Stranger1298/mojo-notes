@@ -1,11 +1,11 @@
 // Supabase-based storage with built-in authentication
-import { supabase, TABLES } from './supabase';
+import { ensureSupabase, TABLES } from './supabase';
 
 // Note operations (user auth is handled by Supabase RLS)
 export const noteStorage = {
   getByUserId: async (userId) => {
     try {
-      const { data, error } = await supabase
+  const { data, error } = await ensureSupabase()
         .from(TABLES.NOTES)
         .select('*')
         .eq('user_id', userId)
@@ -21,7 +21,7 @@ export const noteStorage = {
   
   findById: async (id) => {
     try {
-      const { data, error } = await supabase
+  const { data, error } = await ensureSupabase()
         .from(TABLES.NOTES)
         .select('*')
         .eq('id', id)
@@ -38,7 +38,7 @@ export const noteStorage = {
   create: async (note) => {
     try {
       console.log('Creating note with data:', note);
-      const { data, error } = await supabase
+  const { data, error } = await ensureSupabase()
         .from(TABLES.NOTES)
         .insert([note])
         .select()
@@ -64,7 +64,7 @@ export const noteStorage = {
   
   update: async (id, updates) => {
     try {
-      const { data, error } = await supabase
+  const { data, error } = await ensureSupabase()
         .from(TABLES.NOTES)
         .update(updates)
         .eq('id', id)
@@ -81,7 +81,7 @@ export const noteStorage = {
   
   delete: async (id) => {
     try {
-      const { error } = await supabase
+  const { error } = await ensureSupabase()
         .from(TABLES.NOTES)
         .delete()
         .eq('id', id);

@@ -1,13 +1,32 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Read environment variables (must be prefixed NEXT_PUBLIC_ to be available on client)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+// Lazy init: don't crash the build if vars are missing (e.g. on Vercel before setting them)
+let supabaseInstance = null;
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+  } catch (e) {
+    console.error('Failed to create Supabase client:', e);
+  }
+} else {
+  // One-time warning in build logs.
+  if (typeof console !== 'undefined') {
+    console.warn('[Supabase] Environment variables missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Client will throw when used.');
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = supabaseInstance; // kept for backward compatibility
+
+export function ensureSupabase() {
+  if (!supabaseInstance) {
+    throw new Error('Supabase client not initialized: missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+  }
+  return supabaseInstance;
+}
 
 // Database table names
 export const TABLES = {
@@ -18,7 +37,7 @@ export const TABLES = {
 export const auth = {
   signUp: async (email, password, name) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await ensureSupabase().auth.signUp({
         email,
         password,
         options: {
@@ -107,7 +126,7 @@ export const auth = {
 
   signIn: async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await ensureSupabase().auth.signInWithPassword({
         email,
         password
       });
@@ -139,16 +158,17 @@ export const auth = {
   },
 
   signOut: async () => {
-    const { error } = await supabase.auth.signOut();
+  const { error } = await ensureSupabase().auth.signOut();
     return { error };
   },
 
   getCurrentUser: async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await ensureSupabase().auth.getUser();
     return { user, error };
   },
 
   onAuthStateChange: (callback) => {
-    return supabase.auth.onAuthStateChange(callback);
+  const client = ensureSupabase();
+  return client.auth.onAuthStateChange(callback);
   }
 };
