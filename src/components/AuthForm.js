@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -79,98 +82,93 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isLogin ? 'Sign in to your account' : 'Create your account'}
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+    <div className="min-h-screen flex items-center justify-center py-14 px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-center text-lg font-medium">
+            {isLogin ? 'Welcome back' : 'Create an account'}
+          </CardTitle>
+          <div className="mt-3 flex items-center justify-center gap-2 text-[11px] font-medium">
             <button
-              onClick={toggleMode}
-              className="font-medium text-blue-600 hover:text-blue-500"
+              type="button"
+              className={`px-3 py-1.5 rounded-md transition ${
+                isLogin
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-border)] text-[var(--color-foreground)]/70 hover:text-[var(--color-foreground)]'
+              }`}
+              onClick={() => !isLogin && toggleMode()}
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
+              Sign In
             </button>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+            <button
+              type="button"
+              className={`px-3 py-1.5 rounded-md transition ${
+                !isLogin
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-border)] text-[var(--color-foreground)]/70 hover:text-[var(--color-foreground)]'
+              }`}
+              onClick={() => isLogin && toggleMode()}
+            >
+              Sign Up
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
-              <div>
-                <label htmlFor="name" className="sr-only">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required={!isLogin}
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Full name"
-                />
+              <Input
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="Jane Doe"
+              />
+            )}
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+            />
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="••••••••"
+              hint={isLogin ? undefined : 'Use 8+ characters'}
+            />
+
+            {(error || success) && (
+              <div
+                className={`text-xs rounded-md px-3 py-2 border flex items-start gap-2 leading-relaxed ${
+                  error
+                    ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300'
+                    : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300'
+                }`}
+              >
+                <span className="mt-0.5 text-sm">
+                  {error ? '⚠️' : '✅'}
+                </span>
+                <span>{error || success}</span>
               </div>
             )}
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${
-                  isLogin ? 'rounded-t-md' : ''
-                } focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-          </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-md text-center">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-600 text-sm p-3 rounded-md text-center">
-              {success}
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Please wait...' : isLogin ? 'Sign in' : 'Sign up'}
-            </button>
-          </div>
-        </form>
-      </div>
+            <Button type="submit" className="w-full" loading={loading}>
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </Button>
+            <p className="text-[11px] text-center text-[var(--color-muted)]">
+              {isLogin ? "Need an account? Switch above." : 'Already have an account? Switch above.'}
+            </p>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { noteStorage } from '@/lib/storage';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { Input, Textarea } from '@/components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function NotesDashboard() {
   const { user, logout } = useAuth();
@@ -127,152 +131,145 @@ export default function NotesDashboard() {
     setError('');
   };
 
+  const displayName = user?.user_metadata?.name || (user?.email ? user.email.split('@')[0] : 'User');
+
   return (
-    <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Notes</h1>
-              <p className="text-gray-600">Welcome back, {user?.user_metadata?.name || user?.email}!</p>
-            </div>
-            <button
-              onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Logout
-            </button>
+      <header className="relative">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary-500/20 via-primary-400/10 to-primary-300/20" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+              <h1 className="text-xl font-semibold tracking-tight">
+              My Notes
+            </h1>
+              <p className="text-xs mt-1 text-[var(--color-muted)]">
+              Welcome back, {user?.user_metadata?.name || user?.email}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+              <Button size="sm" onClick={() => setShowForm(true)} className="whitespace-nowrap">
+                New
+              </Button>
+              <Button variant="outline" size="sm" onClick={logout}>
+                Logout
+              </Button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Search and Add Note */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            <div className="flex-1">
+            <Input
               placeholder="Search notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
             />
           </div>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium whitespace-nowrap"
-          >
-            Add Note
-          </button>
+          <div className="flex gap-3">
+              <Button onClick={() => setShowForm(true)} size="sm">Add</Button>
+          </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="mb-6 text-xs rounded-md px-3 py-2 border border-rose-300 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-700 text-rose-700 dark:text-rose-300">
             {error}
           </div>
         )}
 
         {/* Note Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  {editingNote ? 'Edit Note' : 'Add New Note'}
-                </h3>
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-4">
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
-                      placeholder="Enter note title"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                      Content
-                    </label>
-                    <textarea
-                      id="content"
-                      rows={6}
-                      value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
-                      placeholder="Write your note here..."
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md disabled:opacity-50"
-                    >
-                      {loading ? 'Saving...' : editingNote ? 'Update' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetForm}
-                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
+        <Modal
+          open={showForm}
+          onClose={resetForm}
+          title={editingNote ? 'Edit Note' : 'Add Note'}
+          size="md"
+        >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="A brilliant thought"
+              required
+            />
+            <Textarea
+              label="Content"
+              rows={8}
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder="Write your idea here..."
+              required
+            />
+              <div className="flex gap-3 pt-1">
+              <Button type="submit" className="flex-1" loading={loading}>
+                {editingNote ? 'Update Note' : 'Save Note'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={resetForm}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
             </div>
-          </div>
-        )}
+          </form>
+        </Modal>
 
         {/* Notes Grid */}
         {loading && !showForm ? (
-          <div className="text-center py-8">
-            <div className="text-gray-500">Loading notes...</div>
-          </div>
-        ) : filteredNotes.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-gray-500">
-              {searchTerm ? 'No notes found matching your search.' : 'No notes yet. Create your first note!'}
+            <div className="text-center py-12 text-[var(--color-muted)] text-sm">Loading notes…</div>
+          ) : filteredNotes.length === 0 ? (
+            <div className="text-center py-12 text-[var(--color-muted)] text-sm">
+              {searchTerm ? 'No matches.' : 'No notes yet.'}
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredNotes.map((note) => (
-              <div key={note.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">{note.title}</h3>
-                  <div className="flex gap-2 ml-2">
-                    <button
+              <Card key={note.id} interactive className="flex flex-col">
+                <CardHeader className="pb-2 flex gap-2 items-start">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="truncate text-sm font-semibold">
+                      {note.title || 'Untitled'}
+                    </CardTitle>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[var(--color-muted)]">by {displayName}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="xs"
+                      variant="ghost"
                       onClick={() => handleEdit(note)}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      className="px-2"
                     >
                       Edit
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="ghost"
                       onClick={() => handleDelete(note.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
+                      className="px-2 text-rose-600 hover:text-rose-500"
                     >
-                      Delete
-                    </button>
+                      Del
+                    </Button>
                   </div>
-                </div>
-                <p className="text-gray-600 mb-4 line-clamp-4">{note.content}</p>
-                <div className="text-xs text-gray-400">
-                  {editingNote?.id === note.id ? 'Editing...' : 
-                    `Updated ${new Date(note.updated_at).toLocaleDateString()}`}
-                </div>
-              </div>
+                </CardHeader>
+                <CardContent className="pt-0 flex-1 flex flex-col">
+                  <p className="text-sm leading-relaxed line-clamp-4 flex-1">
+                    {note.content}
+                  </p>
+                  <div className="mt-4 text-[11px] tracking-wide uppercase text-foreground/40">
+                    {editingNote?.id === note.id ? 'Editing…' : `Updated ${new Date(note.updated_at).toLocaleDateString()}`}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
